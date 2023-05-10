@@ -1,5 +1,5 @@
 // Define the cache name and files to cache
-const CACHE_NAME = 'jspt-v05';
+const CACHE_NAME = 'jspt-v06';
 const urlsToCache = [
   '/',
   '/index.php',
@@ -81,11 +81,12 @@ self.addEventListener('activate', (event) => {
 //
 
 
-importScripts("https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js");
-importScripts("https://www.gstatic.com/firebasejs/9.21.0/firebase-messaging.js");
+
+importScripts('https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js');
+importScripts('https://www.gstatic.com/firebasejs/9.21.0/firebase-messaging.js');
 
 
-const firebaseConfig = {
+firebase.initializeApp({
     apiKey: "AIzaSyAwniByf6z00j8HOyj0bIkhim4CQNGOsks",
     authDomain: "youngdreamersfortalaigua-01.firebaseapp.com",
     projectId: "youngdreamersfortalaigua-01",
@@ -93,76 +94,44 @@ const firebaseConfig = {
     messagingSenderId: "505716996899",
     appId: "1:505716996899:web:560ff6434ee2ab2841aa96",
     measurementId: "G-G124TRGM7Y"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-// Get the messaging instance
-const messaging = getMessaging(app);
-
-self.addEventListener("push", async (event) => {
-  try {
-    if ("Notification" in self) {
-      // Request permission to show notifications
-      const permission = await Notification.requestPermission();
-      if (permission === "granted") {
-        // Get the registration token
-        const currentToken = await getToken(messaging, {
-          vapidKey:
-            "BKlKTCq5MEuyR3yhY86AkNwetwBJLdNlXRZVks-A0in_hknX1QFvLhOG48XZLO1E6LGqeHjJBXZUYg_phkBFsSU",
-          serviceWorkerRegistration: self.registration,
-        });
-        console.log("Token:", currentToken);
-      } else if (permission === "denied") {
-        console.log("Permission for notifications was denied");
-      } else if (permission === "default") {
-        console.log("The permission request was dismissed by the user");
-      }
-    } else {
-      console.log("Notifications are not available");
-    }
-  } catch (error) {
-    if (error.code === "messaging/permission-blocked") {
-      console.log("The permission for notifications was blocked");
-    } else {
-      console.log("Error while subscribing to notifications:", error);
-    }
-  }
 });
 
-// Handle incoming messages
-messaging.onMessage((payload) => {
-  console.log("[Service Worker] Received message:", payload);
+// Retrieve Firebase Messaging object.
+const messaging = firebase.messaging();
 
-  const { title, body, icon } = payload.notification;
+// Handle background message
+messaging.onBackgroundMessage(function(payload) {
+  console.log('[firebase-messaging-sw.js] Received background message ', payload);
+  // Customize notification here
+  const notificationTitle = 'Background Message Title';
+  const notificationOptions = {
+    body: 'Background Message body.',
+    icon: '/firebase-logo.png'
+  };
 
-  self.registration.showNotification(title, {
-    body,
-    icon,
-  });
+  self.registration.showNotification(notificationTitle,
+    notificationOptions);
 });
 
-if ('firebase' in self && 'messaging' in firebase) {
-  firebase.messaging().getToken({vapidKey: 'BKlKTCq5MEuyR3yhY86AkNwetwBJLdNlXRZVks-A0in_hknX1QFvLhOG48XZLO1E6LGqeHjJBXZUYg_phkBFsSU'}).then((currentToken) => {
-    if (currentToken) {
-      console.log('FCM token:', currentToken);
-    } else {
-      console.log('No FCM token available.');
-    }
-  }).catch((error) => {
-    console.log('An error occurred while retrieving the FCM token:', error);
-  });
-} else {
-  console.log('Firebase Messaging is not available');
-}
-
-
-// Handle notification clicks
-self.addEventListener("notificationclick", (event) => {
-  console.log("[Service Worker] Notification click Received.");
-
+// Handle notification click event
+self.addEventListener('notificationclick', function(event) {
+  console.log('On notification click: ', event.notification.tag);
+  // Android doesn’t close the notification when you click on it
+  // See: http://crbug.com/463146
   event.notification.close();
 
-  event.waitUntil(clients.openWindow("https://youngdreamersfortalaigua.org"));
+  // This looks to see if the current is already open and
+  // focuses if it is
+  event.waitUntil(clients.matchAll({
+    type: "window"
+  }).then(function(clientList) {
+    for (let i = 0; i < clientList.length; i++) {
+      const client = clientList[i];
+      if (client.url === '/' && 'focus' in client)
+        return client.focus();
+    }
+    if (clients.openWindow) {
+      return clients.openWindow('/');
+    }
+  }));
 });
