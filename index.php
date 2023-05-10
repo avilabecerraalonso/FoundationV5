@@ -174,19 +174,6 @@ $conn->close();
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const messaging = getMessaging(app);
-  
-  if ('firebase' in self && 'messaging' in firebase) {
-  // Get the registration token
-  const currentToken = await firebase.messaging().getToken({
-    vapidKey: 'BKlKTCq5MEuyR3yhY86AkNwetwBJLdNlXRZVks-A0in_hknX1QFvLhOG48XZLO1E6LGqeHjJBXZUYg_phkBFsSU',
-    serviceWorkerRegistration: self.registration
-  });
-
-  // Show the token in an alert box
-  alert(currentToken);
-} else {
-  console.log('Firebase Messaging is not available');
-}
 
 </script>
   <link rel="manifest" href="./manifest.json">
@@ -357,7 +344,6 @@ $conn->close();
       </div>
     </div>
   </div>
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
     crossorigin="anonymous"></script>
@@ -395,50 +381,16 @@ $conn->close();
 
 </script>";
 } ?>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-analytics.js";
-  import { getMessaging } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-messaging.js";
-  
-  const firebaseConfig = {
-    apiKey: "AIzaSyAwniByf6z00j8HOyj0bIkhim4CQNGOsks",
-    authDomain: "youngdreamersfortalaigua-01.firebaseapp.com",
-    projectId: "youngdreamersfortalaigua-01",
-    storageBucket: "youngdreamersfortalaigua-01.appspot.com",
-    messagingSenderId: "505716996899",
-    appId: "1:505716996899:web:560ff6434ee2ab2841aa96",
-    measurementId: "G-G124TRGM7Y"
-  };
-  
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const messaging = getMessaging(app);
-  
-  
-  // Register the messaging service worker
-  
-  // Request permission to receive notifications
-  messaging.requestPermission().then(function() {
-    console.log('Notification permission granted.');
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+  .then(function(registration) {
+    console.log('Registration successful, scope is:', registration.scope);
   }).catch(function(err) {
-    console.log('Unable to get permission to notify.', err);
+    console.log('Service worker registration failed, error:', err);
   });
-  
-  // Handle incoming messages
-  messaging.onMessage(function(payload) {
-    console.log('Message received. ', payload);
-  });
-</script>
-<script type="text/javascript">
-      if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/sw.js').then(function(registration) {
-        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-      }, function(err) {
-        console.log('ServiceWorker registration failed: ', err);
-      });
-    });
-  }
+}
+
 </script>
 
 </body>
